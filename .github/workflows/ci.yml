@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show repository contents
+        run: |
+          echo "Repository checked out successfully."
+          ls -la
+
+      - name: Run a sample verification step
+        run: echo "This is your first GitHub Actions workflow!"
