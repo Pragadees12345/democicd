@@ -43,13 +43,17 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Run unit tests
-        run: mvn -B test
+      - name: Run unit tests with coverage
+        run: mvn -B test jacoco:report
 
   quality:
     name: Code Quality
     runs-on: ubuntu-24.04
     needs: test
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_HOST_URL: https://sonarcloud.io
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
     steps:
       - name: Check out code
@@ -62,8 +66,24 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Run Checkstyle
-        run: mvn -B checkstyle:check
+      - name: Run quality gates
+        run: mvn -B verify
+
+      - name: SonarCloud analysis
+        if: ${{ secrets.SONAR_TOKEN != '' }}
+        uses: SonarSource/sonarqube-scan-action@v5
+        with:
+          projectBaseDir: .
+          args: >
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION || 'your-sonar-organization' }}
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY || 'demo-cicd' }}
+            -Dsonar.java.binaries=target/classes
+
+      - name: Snyk security scan
+        if: ${{ secrets.SNYK_TOKEN != '' }}
+        uses: snyk/actions/maven@master
+        with:
+          args: --severity-threshold=high --all-projects
 
   package:
     name: Package Artifact
