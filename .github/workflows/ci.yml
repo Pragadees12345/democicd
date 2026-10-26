@@ -70,7 +70,7 @@ jobs:
         run: mvn -B verify
 
       - name: SonarCloud analysis
-        if: ${{ secrets.SONAR_TOKEN != '' }}
+        if: ${{ env.SONAR_TOKEN != '' }}
         uses: SonarSource/sonarqube-scan-action@v5
         with:
           projectBaseDir: .
@@ -80,7 +80,7 @@ jobs:
             -Dsonar.java.binaries=target/classes
 
       - name: Snyk security scan
-        if: ${{ secrets.SNYK_TOKEN != '' }}
+        if: ${{ env.SNYK_TOKEN != '' }}
         uses: snyk/actions/maven@master
         with:
           args: --severity-threshold=high --all-projects
